@@ -1,0 +1,45 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+  relationMode = "prisma" // planetscale does not support for foreignKeys
+}
+
+model Tasks {
+  id         Int        @id @default(autoincrement()) 
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
+  task_status Status    @default(processing)
+  images     Images[]
+}
+
+model Images {
+  id         Int      @id @default(autoincrement()) 
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  filename   String   @db.VarChar(500)
+  key        String   @db.VarChar(500)
+  resolution String   
+  md5sum     String? 
+  path_s3    String   @db.VarChar(500)
+  path_local String?   @db.VarChar(500)
+  image_status Status @default(processing)
+  task       Tasks    @relation(fields: [taskId], references: [id])
+  taskId     Int 
+  
+  @@index([taskId])
+}
+
+enum Status {
+  processing 
+  finished
+  errored
+} 
+
+
